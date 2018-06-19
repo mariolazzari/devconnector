@@ -5,6 +5,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const keys = require("../../config/keys");
 const passport = require("passport");
+const validateRegisterInput = require("../../validation/register");
+const validateLoginInput = require("../../validation/login");
 
 // @route   GET api/users/test
 // @desc    Testing users routing
@@ -17,14 +19,19 @@ router.get("/test", (req, res) => {
 // @desc    User registration
 // @access  Public
 router.post("/register", (req, res) => {
+    // check user input
+    const { errors, isValid } = validateRegisterInput(req.body);
+    if (!isValid) {
+        return res.status(400).json({ errors });
+    }
+
     // check if user already exists
     User.findOne({ email: req.body.email })
         .then(user => {
             if (user) {
                 // user already exists
-                res.status(400).json({
-                    email: "Email address already present."
-                });
+                errors.email = "Email address already present.";
+                res.status(400).json(errors);
             } else {
                 // get user avatar
                 const avatar = gravatar.url(req.body.email, {
@@ -63,6 +70,12 @@ router.post("/register", (req, res) => {
 // @desc    User login and jwt token
 // @access  Public
 router.post("/login", (req, res) => {
+    // validate user input
+    const { errors, isValid } = validateLoginInput(req.body);
+    if (!isValid) {
+        return res.status(400).send(errors);
+    }
+
     // search user by email
     User.findOne({ email: req.body.email })
         .then(user => {
@@ -100,7 +113,8 @@ router.post("/login", (req, res) => {
                     })
                     .catch(err => console.log(err));
             } else {
-                return res.status(404).json({ msg: "Email not registered" });
+                errors.email = "Email not registered";
+                return res.status(404).json(errors);
             }
         })
         .catch(err => console.log(err));
