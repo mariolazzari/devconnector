@@ -6,9 +6,9 @@ const passport = require("passport");
 
 // connecto to mongoDB
 mongoose
-    .connect(mongoURI)
-    .then(console.log("MongoDB connected"))
-    .catch(err => console.log("Error connecting to MongoDB", err.message));
+  .connect(mongoURI, { useNewUrlParser: true })
+  .then(console.log("MongoDB connected"))
+  .catch(err => console.log("Error connecting to MongoDB", err.message));
 
 // express setup
 const app = express();
@@ -28,5 +28,5 @@ app.use("/api/profile", require("./routes/api/profile"));
 app.use("/api/posts", require("./routes/api/posts"));
 
 app.listen(port, () => {
-    console.log(`Server started on port ${port}`);
+  console.log(`Server started on port ${port}`);
 });
